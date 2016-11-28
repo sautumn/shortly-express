@@ -2,7 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
+var session = require('express-session');
+var bcrypt = require('bcrypt-nodejs');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -21,16 +22,27 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+app.use(session({secret: 'COOKIE'}));
 
 
 app.get('/', 
 function(req, res) {
-  res.render('index');
+  // console.log('THIS IS SESSION', req.session);
+  // console.log(req.session.user);
+  if (!req.session.user) {
+    res.redirect('login');
+  } else {
+    res.render('index');
+  }
 });
 
 app.get('/create', 
 function(req, res) {
-  res.render('index');
+  if (!req.session.user) {
+    res.redirect('login');
+  } else {
+    res.render('index');
+  }
 });
 
 app.get('/links', 
@@ -76,8 +88,62 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 
+app.get('/login', function(req, res) {
+  res.render('login');
+});
 
+app.get('/signup', function(req, res) {
+  // req.session.user = req.body.username;
+  res.render('signup');
+});
 
+app.post('/login', function(req, res) {
+
+});
+
+app.post('/signup', function(req, res) {
+  // req.session.user = req.body.username;
+  var user = req.body.username;
+  var password = req.body.password;
+  db.knex.select().from('users').then(function(value) {
+    if (value.length === 0) {  
+      bcrypt.hash(password, null, null, function(err, hash) { 
+        if (err) {
+          res.statusCode(400);
+          res.redirect('signup');
+        } else {
+          //put into db
+          db.knex('users').insert({username: user, password: hash}).catch(function(err) {
+            console.log('shit', err);
+          });
+        }
+      });
+    } else {
+      res.statusCode(400);
+      res.redirect('login');
+    }
+  });
+  // db.knex('users').whereExists(function() {
+  //   console.log('asdf');
+  //   var test = this.select('*').from('users').whereRaw('username =' + user);
+  //   console.log('FAIWJEFOAJWIOFWAF', test);
+  // });
+
+  // CHECK IF USERNAME EXISTS INSIDE DATABASE
+    // IF EXISTS, SEND ERROR (USERNAME EXISTS ALREADY)
+  // ELSE
+    // HASH PASSWORD
+    // INSERT USERNAME AND PASSWORD INTO DB.
+
+  res.render('signup');
+  res.end();
+});
+
+app.get('/logout', function(req, res) {
+  req.session.destroy(function() {
+    res.redirect('login');
+  });
+});
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
 // assume the route is a short code and try and handle it here.
