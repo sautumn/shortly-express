@@ -47,20 +47,22 @@ function(req, res) {
 
 app.get('/links', 
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.status(200).send(links.models);
-  });
+  if (!req.session.user) {
+    res.redirect('login');
+  } else {
+    Links.reset().fetch().then(function(links) {
+      res.status(200).send(links.models);
+    });
+  }
 });
 
 app.post('/links', 
 function(req, res) {
   var uri = req.body.url;
-
   if (!util.isValidUrl(uri)) {
     console.log('Not a valid url: ', uri);
     return res.sendStatus(404);
   }
-
   new Link({ url: uri }).fetch().then(function(found) {
     if (found) {
       res.status(200).send(found.attributes);
@@ -90,51 +92,62 @@ function(req, res) {
 
 app.get('/login', function(req, res) {
   res.render('login');
+  res.end();
 });
 
 app.get('/signup', function(req, res) {
   // req.session.user = req.body.username;
   res.render('signup');
+  res.end();
 });
+
 
 app.post('/login', function(req, res) {
   // req.session.user = req.body.username;
   // SELECT USER AND HASH FROM DATABASE
     // IF HASH FROM DATABASE === HASH FROM REQ.BODY HASH
       // LOGIN TO SESSION
-  db.knex.select('users.password').from('users').where('username', req.body.username).then(function(value) {
-    bcrypt.compare(req.body.password, value[0].password, function(err, result) {
-      console.log(value);
-      console.log(result);
-      if (result) {
-        req.session.user = req.body.username;
-        // res.sendStatus(400);
-        res.redirect('index');
+  if (req.body.password) {
+    db.knex.select('users.password').from('users').where('username', req.body.username).then(function(value) {
+      // console.log('THIS IS VALUE', value);
+      // console.log('THIS IS PASSWORD', req.body.password );
+      if (value.length > 0) {
+        bcrypt.compare(req.body.password, value[0].password, function(err, result) {
+          // console.log(result);
+          if (result) {
+            req.session.user = req.body.username;
+            // res.sendStatus(400);
+            res.redirect('/');
+          } else {
+            // res.sendStatus(400);
+            res.redirect('signup');
+          }
+        });
       } else {
-        // res.sendStatus(400);
-        res.redirect('signup');
+        res.redirect('/login');
       }
     });
-  });
+  }
 });
 
 app.post('/signup', function(req, res) {
   var user = req.body.username;
   var password = req.body.password;
 
-  db.knex.select().from('users').where('username' , req.body.username).then(function(value) {
+
+  db.knex.select().from('users').where('username', req.body.username).then(function(value) {
     if (value.length === 0) {  
       bcrypt.hash(password, null, null, function(err, hash) { 
         if (err) {
           return;
         } else {
-          //put into db
-          db.knex('users').insert({username: user, password: hash}).catch(function(err) {
+          db.knex('users').insert([{username: user, password: hash}]).then(function(value) {
+            req.session.user = req.body.username;
+            res.redirect('/');
+          }).catch(function(err) {
             console.log('shit', err);
             res.redirect('signup');
           });
-          req.session.user = req.body.username;
-          res.redirect('index');
         }
       });
     } else {
