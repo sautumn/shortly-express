@@ -53,17 +53,17 @@ db.knex.schema.hasTable('users').then(function(exists) {
   }
 });
 
-db.knex.schema.hasTable('users').then(function(exists){
-  if(!exists){
-    db.knex.schema.createTable('users', function(user){
-      user.increments('id').primary();
-      user.string('username', 255);
-      user.string('password', 255);
-      user.timestamps();
-    }).then(function(table){
+db.knex.schema.hasTable('users_links').then(function(exists) {
+  if (!exists) {
+    db.knex.schema.createTable('users_links', function(userLink) {
+      userLink.increments('id').primary();
+      userLink.string('username', 255);
+      userLink.string('longUrl', 255);
+    }).then(function(table) {
       console.log('Created Table', table);
-    })
+    });
   }
 });
+
 
 module.exports = db;

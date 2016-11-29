@@ -13,20 +13,15 @@ var Link = require('../app/models/link');
 // Remove the 'x' from beforeEach block when working on
 // authentication tests.
 /************************************************************/
-<<<<<<< HEAD
 var xbeforeEach = function(callback) {
   // calxlback();
-=======
-var beforeEach = function(callback) {
-  callback();
->>>>>>> c489de5a74425befc6005ca7a1c9459525e7f2e1
 };
 /************************************************************/
 
 
 describe('Initial Tests', function() {
 
-  xbeforeEach(function() {
+  beforeEach(function() {
     // log out currently signed in user
     request('http://127.0.0.1:4568/logout', function(error, res, body) {});
 
@@ -66,7 +61,7 @@ describe('Initial Tests', function() {
       });
   });
 
-  xdescribe('Link creation:', function() {
+  describe('Link creation:', function() {
 
     var requestWithSession = request.defaults({jar: true});
 

@@ -9,10 +9,15 @@ var User = db.Model.extend({
   hasTimestamps: true,
   defaults: {},
 
-  initialize: function(){
+  initialize: function() {
+    var context = this;
+    var password = this.get('password');
+    bcrypt.genSalt(5, function(err, salt) {
+      bcrypt.hash(password, salt, function(err, hash) {
+        context.set('password', hash);
+      });
+    });
     // this.on('creating', function(model, attrs, options) {
-      var hash = bcrypt.hashSync(this.get('password'));
-      this.set('password', hash);
     // });
   }
 });
