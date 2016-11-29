@@ -98,45 +98,49 @@ app.get('/signup', function(req, res) {
 });
 
 app.post('/login', function(req, res) {
-
+  // req.session.user = req.body.username;
+  // SELECT USER AND HASH FROM DATABASE
+    // IF HASH FROM DATABASE === HASH FROM REQ.BODY HASH
+      // LOGIN TO SESSION
+  db.knex.select('users.password').from('users').where('username', req.body.username).then(function(value) {
+    bcrypt.compare(req.body.password, value[0].password, function(err, result) {
+      console.log(value);
+      console.log(result);
+      if (result) {
+        req.session.user = req.body.username;
+        // res.sendStatus(400);
+        res.redirect('index');
+      } else {
+        // res.sendStatus(400);
+        res.redirect('signup');
+      }
+    });
+  });
 });
 
 app.post('/signup', function(req, res) {
-  // req.session.user = req.body.username;
   var user = req.body.username;
   var password = req.body.password;
-  db.knex.select().from('users').then(function(value) {
+
+  db.knex.select().from('users').where('username' , req.body.username).then(function(value) {
     if (value.length === 0) {  
       bcrypt.hash(password, null, null, function(err, hash) { 
         if (err) {
-          res.statusCode(400);
-          res.redirect('signup');
+          return;
         } else {
           //put into db
           db.knex('users').insert({username: user, password: hash}).catch(function(err) {
             console.log('shit', err);
+            res.redirect('signup');
           });
+          req.session.user = req.body.username;
+          res.redirect('index');
         }
       });
     } else {
-      res.statusCode(400);
-      res.redirect('login');
+      res.redirect('signup');
     }
   });
-  // db.knex('users').whereExists(function() {
-  //   console.log('asdf');
-  //   var test = this.select('*').from('users').whereRaw('username =' + user);
-  //   console.log('FAIWJEFOAJWIOFWAF', test);
-  // });
-
-  // CHECK IF USERNAME EXISTS INSIDE DATABASE
-    // IF EXISTS, SEND ERROR (USERNAME EXISTS ALREADY)
-  // ELSE
-    // HASH PASSWORD
-    // INSERT USERNAME AND PASSWORD INTO DB.
-
-  res.render('signup');
-  res.end();
 });
 
 app.get('/logout', function(req, res) {
