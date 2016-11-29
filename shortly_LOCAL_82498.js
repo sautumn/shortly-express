@@ -3,7 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
-var bcrypt = require('bcrypt-nodejs');
+
 
 
 var db = require('./app/config');
@@ -117,7 +117,7 @@ app.post('/signup',
           res.redirect('signup');
         })
       } else {
-        res.redirect('/');
+        res.redirect('signup');
       }
     })
 });
@@ -127,7 +127,7 @@ app.post('/login',
     if (req.body.password){
       db.knex.select('users.password').from('users').where('username', req.body.username).then(function(value) {
         if(value.length > 0){
-          bcrypt.compare(req.body.password, value[0].password, function(err, result) {
+          bcrypt.compare(req.body.password, value[0],password, function(err, result) {
             if (result){
               //start the session if the password is correct
               req.session.user = req.body.username;
@@ -138,7 +138,7 @@ app.post('/login',
           })
           //if the password is not correct
         } else {
-          res.redirect('/login');
+          res.redirect('login');
         }
       }).catch(function(err){
         console.log(err);

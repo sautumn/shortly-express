@@ -3,8 +3,6 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
-var bcrypt = require('bcrypt-nodejs');
-
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -24,6 +22,7 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+app.use(session({secret: 'COOKIE'}));
 
 
 app.get('/',
@@ -46,7 +45,6 @@ function(req, res) {
 
 app.get('/links',
 function(req, res) {
-
   if (!req.session.user){
     res.redirect('login');
   } else {
@@ -59,12 +57,10 @@ function(req, res) {
 app.post('/links',
 function(req, res) {
   var uri = req.body.url;
-
   if (!util.isValidUrl(uri)) {
     console.log('Not a valid url: ', uri);
     return res.sendStatus(404);
   }
-
   new Link({ url: uri }).fetch().then(function(found) {
     if (found) {
       res.status(200).send(found.attributes);
@@ -117,7 +113,7 @@ app.post('/signup',
           res.redirect('signup');
         })
       } else {
-        res.redirect('/');
+        res.redirect('signup');
       }
     })
 });
@@ -127,7 +123,7 @@ app.post('/login',
     if (req.body.password){
       db.knex.select('users.password').from('users').where('username', req.body.username).then(function(value) {
         if(value.length > 0){
-          bcrypt.compare(req.body.password, value[0].password, function(err, result) {
+          bcrypt.compare(req.body.password, value[0],password, function(err, result) {
             if (result){
               //start the session if the password is correct
               req.session.user = req.body.username;
@@ -138,7 +134,7 @@ app.post('/login',
           })
           //if the password is not correct
         } else {
-          res.redirect('/login');
+          res.redirect('login');
         }
       }).catch(function(err){
         console.log(err);
@@ -154,8 +150,77 @@ app.get('.logout', function(req, res) {
 });
 
 
+app.get('/login', function(req, res) {
+  res.render('login');
+  res.end();
+});
+
+app.get('/signup', function(req, res) {
+  // req.session.user = req.body.username;
+  res.render('signup');
+  res.end();
+});
 
 
+app.post('/login', function(req, res) {
+  // req.session.user = req.body.username;
+  // SELECT USER AND HASH FROM DATABASE
+    // IF HASH FROM DATABASE === HASH FROM REQ.BODY HASH
+      // LOGIN TO SESSION
+  if (req.body.password) {
+    db.knex.select('users.password').from('users').where('username', req.body.username).then(function(value) {
+      // console.log('THIS IS VALUE', value);
+      // console.log('THIS IS PASSWORD', req.body.password );
+      if (value.length > 0) {
+        bcrypt.compare(req.body.password, value[0].password, function(err, result) {
+          // console.log(result);
+          if (result) {
+            req.session.user = req.body.username;
+            // res.sendStatus(400);
+            res.redirect('/');
+          } else {
+            // res.sendStatus(400);
+            res.redirect('signup');
+          }
+        });
+      } else {
+        res.redirect('/login');
+      }
+    });
+  }
+});
+
+app.post('/signup', function(req, res) {
+  var user = req.body.username;
+  var password = req.body.password;
+
+
+  db.knex.select().from('users').where('username', req.body.username).then(function(value) {
+    if (value.length === 0) {
+      bcrypt.hash(password, null, null, function(err, hash) {
+        if (err) {
+          return;
+        } else {
+          db.knex('users').insert([{username: user, password: hash}]).then(function(value) {
+            req.session.user = req.body.username;
+            res.redirect('/');
+          }).catch(function(err) {
+            console.log('shit', err);
+            res.redirect('signup');
+          });
+        }
+      });
+    } else {
+      res.redirect('signup');
+    }
+  });
+});
+
+app.get('/logout', function(req, res) {
+  req.session.destroy(function() {
+    res.redirect('login');
+  });
+});
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
 // assume the route is a short code and try and handle it here.

@@ -5,7 +5,7 @@ var Promise = require('bluebird');
 
 
 var User = db.Model.extend({
-  username: 'user',
+  tableName: 'users',
   hasTimestamps: true,
   defaults: {},
 
