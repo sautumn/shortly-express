@@ -13,13 +13,18 @@ var Link = require('../app/models/link');
 // Remove the 'x' from beforeEach block when working on
 // authentication tests.
 /************************************************************/
+<<<<<<< HEAD
 var xbeforeEach = function(callback) {
   // calxlback();
+=======
+var beforeEach = function(callback) {
+  callback();
+>>>>>>> c489de5a74425befc6005ca7a1c9459525e7f2e1
 };
 /************************************************************/
 
 
-describe('', function() {
+describe('Initial Tests', function() {
 
   xbeforeEach(function() {
     // log out currently signed in user
@@ -42,10 +47,10 @@ describe('', function() {
       .del()
       .catch(function(error) {
         // uncomment when writing authentication tests
-        // throw {
-        //   type: 'DatabaseError',
-        //   message: 'Failed to create test setup data'
-        // };
+        throw {
+          type: 'DatabaseError',
+          message: 'Failed to create test setup data'
+        };
       });
 
     // delete user Phillip from db so it can be created later for the test
@@ -54,18 +59,18 @@ describe('', function() {
       .del()
       .catch(function(error) {
         // uncomment when writing authentication tests
-        // throw {
-        //   type: 'DatabaseError',
-        //   message: 'Failed to create test setup data'
-        // };
+        throw {
+          type: 'DatabaseError',
+          message: 'Failed to create test setup data'
+        };
       });
   });
 
-  describe('Link creation:', function() {
+  xdescribe('Link creation:', function() {
 
     var requestWithSession = request.defaults({jar: true});
 
-    xbeforeEach(function(done) {
+    beforeEach(function(done) {
       // create a user that we can then log-in with
       new User({
         'username': 'Phillip',
