@@ -5,6 +5,16 @@ var Promise = require('bluebird');
 
 
 var User = db.Model.extend({
+  username: 'user',
+  hasTimestamps: true,
+  defaults: {},
+
+  initialize: function(){
+    // this.on('creating', function(model, attrs, options) {
+      var hash = bcrypt.hashSync(this.get('password'));
+      this.set('password', hash);
+    // });
+  }
 });
 
 module.exports = User;
