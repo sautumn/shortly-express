@@ -145,13 +145,13 @@ app.post('/signup',
         if (value.length === 0) {
           db.knex('users').insert([newUser.attributes]).then(function(value) {
             req.session.user = req.body.username;
-            res.redirect('index');
+            res.render('index');
           }).catch(function(err) {
             console.log(err);
             res.redirect('signup');
           });
         } else {
-          res.render('/');
+          res.render('index');
         }
       });
   });
