@@ -125,12 +125,12 @@ app.post('/links',
 app.get('/login',
   function(req, res) {
     res.render('login');
-    res.end();
+    // res.end();
   });
 
 app.get('/signup', function(req, res) {
   res.render('signup');
-  res.end();
+  // res.end();
 });
 
 app.post('/signup',
@@ -190,13 +190,13 @@ app.get('.logout', function(req, res) {
 
 app.get('/login', function(req, res) {
   res.render('login');
-  res.end();
+  // res.end();
 });
 
 app.get('/signup', function(req, res) {
   // req.session.user = req.body.username;
   res.render('signup');
-  res.end();
+  // res.end();
 });
 
 
