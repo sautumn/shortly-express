@@ -9,7 +9,7 @@
     "node": "7.0.0"
   },
   "scripts": {
-    "start": "node --ignore node_modules shortly.js",
+    "start": "node shortly.js",
     "start:es6": "node --exec node-babel --ignore node_modules shortly.js",
     "test": "node shortly.js & mocha --bail --reporter nyan test/ServerSpec.js; pkill -n node;",
     "test:es6": "babel-node shortly.js & mocha --compilers js:babel-register --bail --reporter nyan test/ServerSpec.js; pkill -n node;",
