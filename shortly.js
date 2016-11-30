@@ -293,5 +293,5 @@ app.get('/*', function(req, res) {
 // app.listen(4568);
 //changed port for env variables
 app.listen(process.env.PORT || 4568, function(){
-  console.log('listening on', http.address().port);
+  console.log('listening on', app.address().port);
 });
