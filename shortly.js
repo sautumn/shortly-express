@@ -145,7 +145,7 @@ app.post('/signup',
         if (value.length === 0) {
           db.knex('users').insert([newUser.attributes]).then(function(value) {
             req.session.user = req.body.username;
-            res.redirect('/');
+            res.redirect('index');
           }).catch(function(err) {
             console.log(err);
             res.redirect('signup');
