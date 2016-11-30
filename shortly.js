@@ -292,6 +292,6 @@ app.get('/*', function(req, res) {
 // console.log('Shortly is listening on 4568');
 // app.listen(4568);
 //changed port for env variables
-http.listen(process.env.PORT || 4568, function(){
+app.listen(process.env.PORT || 4568, function(){
   console.log('listening on', http.address().port);
 });
